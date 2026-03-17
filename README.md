@@ -29,7 +29,17 @@ Then run:
 bundle install
 ```
 
-Mount the engine in `config/routes.rb`:
+Run the install generator to mount the engine and create the initializer:
+
+```bash
+rails generate service_graph_dev:install
+```
+
+This will:
+- Add the engine mount to `config/routes.rb` (wrapped in `Rails.env.development?`)
+- Create `config/initializers/service_graph_dev.rb` with default configuration
+
+Alternatively, you can mount the engine manually in `config/routes.rb`:
 
 ```ruby
 if Rails.env.development?
