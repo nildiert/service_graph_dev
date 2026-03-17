@@ -5,6 +5,20 @@ module ServiceGraphDev
     before_action :require_allowed_environment!
     skip_forgery_protection only: :vis_network_js
 
+    # Override the host app's CSP for all engine responses.
+    # This is a dev-only tool (already gated by allowed_environments),
+    # so a permissive CSP is safe and avoids nonce mismatch issues
+    # when the host app uses strict-dynamic or custom nonce generators.
+    content_security_policy do |policy|
+      policy.default_src :self, :unsafe_inline
+      policy.script_src  :self, :unsafe_inline, :unsafe_eval
+      policy.style_src   :self, :unsafe_inline
+      policy.img_src     :self, :data
+      policy.connect_src :self
+      policy.font_src    :self
+    end
+    content_security_policy_report_only false
+
     def show
       render layout: false
     end
