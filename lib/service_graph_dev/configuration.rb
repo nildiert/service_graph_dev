@@ -12,6 +12,13 @@ module ServiceGraphDev
     # Rails environments where the engine is accessible. Default: ["development"].
     attr_accessor :allowed_environments
 
+    # Whether to auto-mount the engine in the host app's routes. Default: true.
+    # Set to false if you prefer to mount manually in config/routes.rb.
+    attr_accessor :auto_mount
+
+    # Path where the engine is mounted. Default: "/service_graph".
+    attr_accessor :mount_path
+
     def initialize
       @service_globs = [
         Rails.root.join("app/services/**/*.rb").to_s,
@@ -19,6 +26,8 @@ module ServiceGraphDev
       ]
       @cache_ttl = 5 * 60
       @allowed_environments = %w[development]
+      @auto_mount = true
+      @mount_path = "/service_graph"
     end
   end
 end

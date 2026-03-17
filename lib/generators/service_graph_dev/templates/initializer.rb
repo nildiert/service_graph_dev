@@ -21,4 +21,15 @@ ServiceGraphDev.configure do |config|
   # Default: ["development"]
   #
   # config.allowed_environments = %w[development]
+
+  # Auto-mount the engine at /service_graph. Set to false if you
+  # prefer to mount manually in config/routes.rb.
+  # Default: true
+  #
+  # config.auto_mount = true
+
+  # Path where the engine is mounted.
+  # Default: "/service_graph"
+  #
+  # config.mount_path = "/service_graph"
 end
