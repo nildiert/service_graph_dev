@@ -6,8 +6,8 @@
   <meta name="csrf-token" content="<%= form_authenticity_token %>">
   <title>Service Graph — Dev Tools</title>
   <% nonce = defined?(content_security_policy_nonce) ? content_security_policy_nonce : nil %>
-  <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"<%= nonce ? %( nonce="#{nonce}") : "" %>></script>
-  <style>
+  <script src="<%= vis_network_js_path %>"<%= nonce ? %( nonce="#{nonce}") : "" %>></script>
+  <style<%= nonce ? %( nonce="#{nonce}") : "" %>>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {

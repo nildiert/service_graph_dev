@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
     "lib/**/*",
     "app/**/*",
     "config/**/*",
+    "vendor/**/*",
     "LICENSE",
     "README.md",
   ]

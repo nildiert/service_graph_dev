@@ -17,6 +17,14 @@ module ServiceGraphDev
       render json: Analyzer.analyze_cached
     end
 
+    # Sirve vis-network.min.js embebido en la gema para evitar dependencia de CDN externo.
+    # Esto elimina problemas con Content-Security-Policy.
+    def vis_network_js
+      js_path = File.join(ServiceGraphDev::Engine.root, "vendor/assets/javascripts/vis-network.min.js")
+      expires_in 1.year, public: true
+      send_file js_path, type: "application/javascript", disposition: "inline"
+    end
+
     private
 
     def require_allowed_environment!

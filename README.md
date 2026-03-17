@@ -48,12 +48,9 @@ rails generate service_graph_dev:install
 
 ### Content Security Policy
 
-If your app uses a CSP, allow `unpkg.com` in development so vis.js can load:
-
-```ruby
-# config/initializers/content_security_policy.rb
-sources.push("https://unpkg.com") if Rails.env.development?
-```
+vis-network.js is bundled within the gem and served from the engine's own route,
+so no external CDN is needed. The engine uses CSP nonces automatically when
+your app provides `content_security_policy_nonce` — no extra configuration required.
 
 ## Configuration
 
