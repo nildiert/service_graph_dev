@@ -3,6 +3,7 @@
 module ServiceGraphDev
   class GraphsController < ActionController::Base
     before_action :require_allowed_environment!
+    skip_forgery_protection only: :vis_network_js
 
     def show
       render layout: false
