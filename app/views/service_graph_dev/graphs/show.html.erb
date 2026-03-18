@@ -253,6 +253,46 @@
     }
     .blast-badge .lbl { font-size: 10px; color: #c46212; text-transform: uppercase; letter-spacing: .05em; }
 
+    /* ── Nav buttons ─────────────────────────────────────────── */
+    .nav-group {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .15s, border-color .15s, opacity .15s;
+    }
+    .nav-btn:hover:not(:disabled) { color: var(--accent-hi); border-color: var(--accent-hi); }
+    .nav-btn:disabled { opacity: .3; cursor: default; }
+
+    /* ── Export button ────────────────────────────────────────── */
+    .btn-export {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color .15s, border-color .15s;
+      flex-shrink: 0;
+    }
+    .btn-export:hover { color: var(--accent-hi); border-color: var(--accent-hi); }
+
     /* ── Graph ───────────────────────────────────────────────── */
     .graph-area { flex: 1; position: relative; min-height: 0; }
     #vis-graph { width: 100%; height: 100%; }
@@ -673,11 +713,16 @@
 
     <!-- Info bar -->
     <div id="info-bar">
+      <div class="nav-group">
+        <button class="nav-btn" id="btn-back" title="Go back" disabled>&#9664;</button>
+        <button class="nav-btn" id="btn-forward" title="Go forward" disabled>&#9654;</button>
+      </div>
       <div>
         <div id="info-name"></div>
         <div id="info-file"></div>
       </div>
       <span class="spacer"></span>
+      <button class="btn-export" id="btn-export" title="Download dependency report as JSON">&#8615; Export JSON</button>
       <div class="blast-badge" title="Services that would be affected if this one changes">
         <div>
           <div class="num" id="blast-num">0</div>
@@ -740,6 +785,11 @@
   let selected  = null;
   let maxDepth  = 3;
   let activePack = '';
+
+  // Navigation history
+  let navHistory = [];
+  let navIndex   = -1;
+  let navLock    = false;  // prevent pushes during back/forward
 
   // ── Colors by depth ────────────────────────────────────────────────────────
   const USER_COLORS = [
@@ -917,6 +967,15 @@
     const svc = services[name];
     if (!svc) return;
 
+    // Push to navigation history (unless navigating via back/forward)
+    if (!navLock) {
+      // Truncate forward history when navigating to a new service
+      navHistory = navHistory.slice(0, navIndex + 1);
+      navHistory.push(name);
+      navIndex = navHistory.length - 1;
+    }
+    updateNavButtons();
+
     document.querySelectorAll('.svc-item').forEach(el =>
       el.classList.toggle('active', el.dataset.n === name)
     );
@@ -931,6 +990,28 @@
     renderDepsTab(depsDist, depsPrev, name);
     renderInfoTab(svc);
     showDetailOverlay(svc.class_name);
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  function navigateBack() {
+    if (navIndex <= 0) return;
+    navIndex--;
+    navLock = true;
+    selectService(navHistory[navIndex]);
+    navLock = false;
+  }
+
+  function navigateForward() {
+    if (navIndex >= navHistory.length - 1) return;
+    navIndex++;
+    navLock = true;
+    selectService(navHistory[navIndex]);
+    navLock = false;
+  }
+
+  function updateNavButtons() {
+    document.getElementById('btn-back').disabled    = navIndex <= 0;
+    document.getElementById('btn-forward').disabled = navIndex >= navHistory.length - 1;
   }
 
   // ── Info bar ───────────────────────────────────────────────────────────────
@@ -1328,6 +1409,65 @@
     showToast('Diagram downloaded as PNG (clipboard unavailable)');
   }
 
+  // ── Export JSON report ────────────────────────────────────────────────────
+  function exportJSON() {
+    if (!selected || !services[selected]) return;
+
+    const svc = services[selected];
+    const { dist: affectedDist, prev: affectedPrev } = getAffected(selected, maxDepth);
+    const { dist: depsDist,     prev: depsPrev }     = getDeps(selected, maxDepth);
+
+    const report = {
+      generated_at: new Date().toISOString(),
+      service: {
+        class_name: svc.class_name,
+        file: svc.file || null,
+        pack: svc.pack || null,
+        description: svc.description || null,
+        parent: svc.parent || null,
+        direct_dependencies: svc.dependencies || [],
+      },
+      analysis: {
+        max_depth: maxDepth,
+        pack_filter: activePack || null,
+      },
+      affected: Object.entries(affectedDist)
+        .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+        .map(([name, depth]) => ({
+          class_name: name,
+          depth: depth,
+          path: getPath(name, affectedPrev),
+          file: services[name]?.file || null,
+          pack: services[name]?.pack || null,
+        })),
+      dependencies: Object.entries(depsDist)
+        .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+        .map(([name, depth]) => ({
+          class_name: name,
+          depth: depth,
+          path: getPath(name, depsPrev),
+          file: services[name]?.file || null,
+          pack: services[name]?.pack || null,
+        })),
+      summary: {
+        total_affected: Object.keys(affectedDist).length,
+        total_dependencies: Object.keys(depsDist).length,
+      },
+    };
+
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = selected.replace(/::/g, '-').toLowerCase() + '-report.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Report downloaded');
+  }
+
   // ── Events ────────────────────────────────────────────────────────────────
   document.getElementById('pack-select').addEventListener('change', e => {
     activePack = e.target.value;
@@ -1363,6 +1503,13 @@
 
   // Copy diagram
   document.getElementById('btn-copy-diagram').addEventListener('click', copyDiagram);
+
+  // Navigation
+  document.getElementById('btn-back').addEventListener('click', navigateBack);
+  document.getElementById('btn-forward').addEventListener('click', navigateForward);
+
+  // Export
+  document.getElementById('btn-export').addEventListener('click', exportJSON);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   fetchData(false);
