@@ -114,7 +114,7 @@
     #btn-refresh.loading { opacity: .5; pointer-events: none; }
 
     /* ── Layout ──────────────────────────────────────────────── */
-    .main { display: flex; flex: 1; overflow: hidden; }
+    .main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
     /* ── Sidebar ─────────────────────────────────────────────── */
     .sidebar {
@@ -460,12 +460,10 @@
     [data-theme="light"] .toggle-track .toggle-knob { background: #ffffff; }
 
     /* ── Sidebar detail overlay ──────────────────────────────── */
-    .sidebar { position: relative; }
-
     #detail-overlay {
       position: absolute;
       top: 0;
-      left: 100%;
+      left: 320px;
       width: 380px;
       height: 100%;
       background: var(--bg-dark);
@@ -518,7 +516,7 @@
     #btn-toggle-detail {
       position: absolute;
       top: 50%;
-      right: -32px;
+      left: 320px;
       transform: translateY(-50%);
       width: 28px;
       height: 56px;
@@ -533,12 +531,13 @@
       color: var(--text-muted);
       font-size: 13px;
       z-index: 51;
-      transition: color .15s, background .15s;
+      transition: color .15s, background .15s, left .25s;
     }
     #btn-toggle-detail:hover { color: var(--accent-hi); background: var(--bg-card); }
     #btn-toggle-detail.visible { display: flex; }
+    #btn-toggle-detail.shifted { left: 700px; }
     #btn-toggle-detail .arrow { transition: transform .2s; }
-    #detail-overlay.visible ~ #btn-toggle-detail .arrow { transform: rotate(180deg); }
+    #btn-toggle-detail.shifted .arrow { transform: rotate(180deg); }
 
     /* ── Copy diagram button ─────────────────────────────────── */
     #btn-copy-diagram {
@@ -644,30 +643,30 @@
       </div>
     </div>
     <div id="service-list"></div>
-
-    <!-- Detail overlay panel (floats over graph) -->
-    <div id="detail-overlay">
-      <div class="overlay-header">
-        <span class="overlay-title" id="detail-overlay-title">Details</span>
-        <button id="btn-close-detail" title="Close panel">&#10005;</button>
-      </div>
-      <div class="tabs">
-        <div class="tab active" data-tab="affected">
-          &#8593; Affected <span class="tab-count" id="tc-affected">0</span>
-        </div>
-        <div class="tab" data-tab="deps">
-          &#8595; Dependencies <span class="tab-count" id="tc-deps">0</span>
-        </div>
-        <div class="tab" data-tab="info">
-          &#8505; Info
-        </div>
-      </div>
-      <div class="tab-body active" id="tb-affected"></div>
-      <div class="tab-body" id="tb-deps"></div>
-      <div class="tab-body" id="tb-info"></div>
-    </div>
-    <button id="btn-toggle-detail" title="Toggle detail panel"><span class="arrow">&#9654;</span></button>
   </div>
+
+  <!-- Detail overlay panel (floats over graph from sidebar edge) -->
+  <div id="detail-overlay">
+    <div class="overlay-header">
+      <span class="overlay-title" id="detail-overlay-title">Details</span>
+      <button id="btn-close-detail" title="Close panel">&#10005;</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="affected">
+        &#8593; Affected <span class="tab-count" id="tc-affected">0</span>
+      </div>
+      <div class="tab" data-tab="deps">
+        &#8595; Dependencies <span class="tab-count" id="tc-deps">0</span>
+      </div>
+      <div class="tab" data-tab="info">
+        &#8505; Info
+      </div>
+    </div>
+    <div class="tab-body active" id="tb-affected"></div>
+    <div class="tab-body" id="tb-deps"></div>
+    <div class="tab-body" id="tb-info"></div>
+  </div>
+  <button id="btn-toggle-detail" title="Toggle detail panel"><span class="arrow">&#9654;</span></button>
 
   <!-- Right -->
   <div class="right-panel">
@@ -1196,14 +1195,17 @@
 
   function showDetailOverlay(name) {
     const overlay = document.getElementById('detail-overlay');
+    const toggleBtn = document.getElementById('btn-toggle-detail');
     document.getElementById('detail-overlay-title').textContent = shortLabel(name);
     overlay.classList.add('visible');
-    document.getElementById('btn-toggle-detail').classList.add('visible');
+    toggleBtn.classList.add('visible');
+    toggleBtn.classList.add('shifted');
     detailVisible = true;
   }
 
   function hideDetailOverlay() {
     document.getElementById('detail-overlay').classList.remove('visible');
+    document.getElementById('btn-toggle-detail').classList.remove('shifted');
     detailVisible = false;
   }
 
