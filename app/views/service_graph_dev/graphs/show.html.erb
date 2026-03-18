@@ -1266,13 +1266,29 @@
     const btn = document.getElementById('btn-copy-diagram');
 
     // vis.js renders on a canvas element inside #vis-graph
-    const canvas = document.querySelector('#vis-graph canvas');
-    if (!canvas) {
+    const srcCanvas = document.querySelector('#vis-graph canvas');
+    if (!srcCanvas) {
       showToast('No diagram to copy');
       return;
     }
 
-    canvas.toBlob(function(blob) {
+    // Create a new canvas with the theme background baked in
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const bgColor = isLight ? '#f6f8fa' : '#0d1117';
+
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width  = srcCanvas.width;
+    outCanvas.height = srcCanvas.height;
+    const ctx = outCanvas.getContext('2d');
+
+    // Fill background
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+
+    // Draw the vis.js graph on top
+    ctx.drawImage(srcCanvas, 0, 0);
+
+    outCanvas.toBlob(function(blob) {
       if (!blob) {
         showToast('Failed to capture diagram');
         return;
