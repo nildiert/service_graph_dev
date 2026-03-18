@@ -9,7 +9,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
+    /* ── Dark theme (default) ─────────────────────────────────── */
+    :root, [data-theme="dark"] {
       --bg-deep:    #0d1117;
       --bg-dark:    #161b22;
       --bg-card:    #21262d;
@@ -22,6 +23,50 @@
       --accent:     #2f81f7;
       --accent-hi:  #58a6ff;
       --orange:     #f0883e;
+      --overlay-bg: rgba(13, 17, 23, .9);
+      --svc-name:   #cdd9e5;
+      --selected-bg:    #f0f6fc;
+      --selected-border:#cdd9e5;
+      --selected-font:  #0d1117;
+      --node-shadow: rgba(0,0,0,0.4);
+      --legend-bg:  rgba(22, 27, 34, .96);
+      --chip-blue-bg:  #1f3d6e;
+      --chip-blue-fg:  #79c0ff;
+      --chip-blue-bdr: #1f6feb;
+      --chip-green-bg: #5c2200;
+      --chip-green-fg: #ffa657;
+      --chip-green-bdr:#bd561d;
+      --scrollbar-thumb: var(--border);
+    }
+
+    /* ── Light theme ──────────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg-deep:    #f6f8fa;
+      --bg-dark:    #ffffff;
+      --bg-card:    #f0f3f6;
+      --bg-hover:   #eaeef2;
+      --border:     #d0d7de;
+      --border-hi:  #8c959f;
+      --text-base:  #1f2328;
+      --text-muted: #656d76;
+      --text-dim:   #8c959f;
+      --accent:     #0969da;
+      --accent-hi:  #0550ae;
+      --orange:     #bc4c00;
+      --overlay-bg: rgba(246, 248, 250, .92);
+      --svc-name:   #1f2328;
+      --selected-bg:    #0969da;
+      --selected-border:#0550ae;
+      --selected-font:  #ffffff;
+      --node-shadow: rgba(0,0,0,0.12);
+      --legend-bg:  rgba(255, 255, 255, .96);
+      --chip-blue-bg:  #ddf4ff;
+      --chip-blue-fg:  #0550ae;
+      --chip-blue-bdr: #54aeff;
+      --chip-green-bg: #fff1e5;
+      --chip-green-fg: #bc4c00;
+      --chip-green-bdr:#d4a72c;
+      --scrollbar-thumb: #c1c8cf;
     }
 
     body {
@@ -45,7 +90,7 @@
       gap: 12px;
       flex-shrink: 0;
     }
-    header h1 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+    header h1 { font-size: 15px; font-weight: 700; color: var(--text-base); letter-spacing: -0.3px; }
     .badge {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -112,7 +157,7 @@
 
     #service-list { flex: 1; overflow-y: auto; padding: 4px 0; }
     #service-list::-webkit-scrollbar { width: 3px; }
-    #service-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    #service-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 
     .svc-item {
       padding: 8px 12px;
@@ -121,10 +166,10 @@
       transition: background .1s, border-color .1s;
     }
     .svc-item:hover { background: var(--bg-hover); border-left-color: var(--border-hi); }
-    .svc-item.active { background: #1c2128; border-left-color: var(--accent-hi); }
+    .svc-item.active { background: var(--bg-hover); border-left-color: var(--accent-hi); }
     .svc-item .name {
       font-size: 12px;
-      color: #cdd9e5;
+      color: var(--svc-name);
       font-family: "SF Mono", "Fira Code", monospace;
       white-space: nowrap;
       overflow: hidden;
@@ -152,8 +197,8 @@
       letter-spacing: .03em;
       text-transform: uppercase;
     }
-    .chip-blue  { background: #1f3d6e; color: #79c0ff; border: 1px solid #1f6feb; }
-    .chip-green { background: #5c2200; color: #ffa657; border: 1px solid #bd561d; }
+    .chip-blue  { background: var(--chip-blue-bg); color: var(--chip-blue-fg); border: 1px solid var(--chip-blue-bdr); }
+    .chip-green { background: var(--chip-green-bg); color: var(--chip-green-fg); border: 1px solid var(--chip-green-bdr); }
 
     .empty-msg { padding: 24px 16px; text-align: center; color: var(--text-dim); font-size: 12px; }
 
@@ -175,7 +220,7 @@
       font-family: "SF Mono", "Fira Code", monospace;
       font-size: 13px;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--text-base);
       max-width: 340px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -230,7 +275,7 @@
       position: absolute;
       bottom: 14px;
       right: 14px;
-      background: rgba(22, 27, 34, .96);
+      background: var(--legend-bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -248,7 +293,7 @@
       position: absolute;
       top: 12px;
       right: 12px;
-      background: rgba(22, 27, 34, .96);
+      background: var(--legend-bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 8px 12px;
@@ -262,18 +307,8 @@
     #depth-slider { width: 80px; accent-color: var(--accent); }
     #depth-val { color: var(--accent-hi); font-weight: 700; min-width: 14px; }
 
-    /* ── Detail tabs ─────────────────────────────────────────── */
-    #detail-panel {
-      background: var(--bg-dark);
-      border-top: 1px solid var(--border);
-      max-height: 280px;
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-    #detail-panel.visible { display: flex; }
-    .tabs {
+    /* ── Detail tabs (inside overlay) ───────────────────────── */
+    #detail-overlay .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
@@ -293,7 +328,7 @@
       gap: 6px;
     }
     .tab:hover { color: var(--text-base); }
-    .tab.active { color: #fff; border-bottom-color: var(--accent-hi); }
+    .tab.active { color: var(--text-base); border-bottom-color: var(--accent-hi); }
     .tab-count {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -304,7 +339,7 @@
     }
     .tab-body { flex: 1; overflow-y: auto; padding: 8px 12px; display: none; }
     .tab-body::-webkit-scrollbar { width: 3px; }
-    .tab-body::-webkit-scrollbar-thumb { background: var(--border); }
+    .tab-body::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
     .tab-body.active { display: block; }
 
     /* depth group */
@@ -344,9 +379,9 @@
     .dep-item .nm {
       font-family: "SF Mono", "Fira Code", monospace;
       font-size: 11px;
-      color: #cdd9e5;
+      color: var(--svc-name);
     }
-    .dep-item:hover .nm { color: #e6edf3; }
+    .dep-item:hover .nm { color: var(--text-base); }
 
     .desc-info { padding: 8px 4px; font-size: 12px; color: var(--text-muted); line-height: 1.55; }
     .dep-desc {
@@ -391,11 +426,169 @@
     .pack-filter select:focus { border-color: var(--accent); }
     .pack-filter select option { background: var(--bg-dark); }
 
-    /* ── Loading overlay ──────────────────────────────────────── */
+    /* ── Theme toggle ────────────────────────────────────────── */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-toggle .icon { font-size: 14px; line-height: 1; transition: opacity .2s; }
+    .theme-toggle .icon.dim { opacity: .35; }
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      position: relative;
+      transition: background .2s, border-color .2s;
+    }
+    .toggle-track .toggle-knob {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-hi);
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: transform .25s cubic-bezier(.4,.0,.2,1), background .2s;
+    }
+    [data-theme="light"] .toggle-track .toggle-knob { transform: translateX(16px); }
+    [data-theme="light"] .toggle-track { background: var(--accent); border-color: var(--accent); }
+    [data-theme="light"] .toggle-track .toggle-knob { background: #ffffff; }
+
+    /* ── Sidebar detail overlay ──────────────────────────────── */
+    .sidebar { position: relative; }
+
+    #detail-overlay {
+      position: absolute;
+      top: 0;
+      left: 100%;
+      width: 380px;
+      height: 100%;
+      background: var(--bg-dark);
+      border-left: 1px solid var(--border);
+      box-shadow: 4px 0 24px rgba(0,0,0,.3);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform .25s cubic-bezier(.4,.0,.2,1), opacity .2s;
+    }
+    [data-theme="light"] #detail-overlay { box-shadow: 4px 0 24px rgba(0,0,0,.08); }
+    #detail-overlay.visible { display: flex; }
+
+    #detail-overlay .overlay-header {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    #detail-overlay .overlay-header .overlay-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-base);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    #btn-close-detail {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .15s, border-color .15s;
+      flex-shrink: 0;
+    }
+    #btn-close-detail:hover { color: var(--text-base); border-color: var(--border-hi); }
+
+    #btn-toggle-detail {
+      position: absolute;
+      top: 50%;
+      right: -32px;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 56px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      z-index: 51;
+      transition: color .15s, background .15s;
+    }
+    #btn-toggle-detail:hover { color: var(--accent-hi); background: var(--bg-card); }
+    #btn-toggle-detail.visible { display: flex; }
+    #btn-toggle-detail .arrow { transition: transform .2s; }
+    #detail-overlay.visible ~ #btn-toggle-detail .arrow { transform: rotate(180deg); }
+
+    /* ── Copy diagram button ─────────────────────────────────── */
+    #btn-copy-diagram {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--legend-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: none;
+      align-items: center;
+      gap: 6px;
+      transition: color .15s, border-color .15s;
+      z-index: 10;
+    }
+    #btn-copy-diagram:hover { color: var(--accent-hi); border-color: var(--accent-hi); }
+    #btn-copy-diagram.visible { display: flex; }
+    #btn-copy-diagram .copy-icon { font-size: 13px; }
+    #btn-copy-diagram.copied { color: #3fb950; border-color: #3fb950; }
+    #btn-copy-diagram.copied::after { content: none; }
+
+    /* ── Toast notification ──────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-base);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 12px;
+      z-index: 200;
+      opacity: 0;
+      transition: transform .3s cubic-bezier(.4,.0,.2,1), opacity .3s;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
     #overlay {
       position: fixed;
       inset: 0;
-      background: rgba(13, 17, 23, .9);
+      background: var(--overlay-bg);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -427,6 +620,13 @@
   <span class="badge" id="badge-total">—</span>
   <span class="badge" id="badge-cache">—</span>
   <span class="spacer"></span>
+  <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark theme">
+    <span class="icon" id="icon-moon">&#9790;</span>
+    <div class="toggle-track">
+      <div class="toggle-knob"></div>
+    </div>
+    <span class="icon dim" id="icon-sun">&#9788;</span>
+  </div>
   <button id="btn-refresh">&#8634; Refresh</button>
 </header>
 
@@ -444,6 +644,29 @@
       </div>
     </div>
     <div id="service-list"></div>
+
+    <!-- Detail overlay panel (floats over graph) -->
+    <div id="detail-overlay">
+      <div class="overlay-header">
+        <span class="overlay-title" id="detail-overlay-title">Details</span>
+        <button id="btn-close-detail" title="Close panel">&#10005;</button>
+      </div>
+      <div class="tabs">
+        <div class="tab active" data-tab="affected">
+          &#8593; Affected <span class="tab-count" id="tc-affected">0</span>
+        </div>
+        <div class="tab" data-tab="deps">
+          &#8595; Dependencies <span class="tab-count" id="tc-deps">0</span>
+        </div>
+        <div class="tab" data-tab="info">
+          &#8505; Info
+        </div>
+      </div>
+      <div class="tab-body active" id="tb-affected"></div>
+      <div class="tab-body" id="tb-deps"></div>
+      <div class="tab-body" id="tb-info"></div>
+    </div>
+    <button id="btn-toggle-detail" title="Toggle detail panel"><span class="arrow">&#9654;</span></button>
   </div>
 
   <!-- Right -->
@@ -479,6 +702,10 @@
         <p>Select a service to see its transitive blast radius</p>
       </div>
 
+      <button id="btn-copy-diagram" title="Copy diagram to clipboard">
+        <span class="copy-icon">&#128203;</span> Copy diagram
+      </button>
+
       <div id="depth-ctrl">
         Depth
         <input type="range" id="depth-slider" min="1" max="6" value="3">
@@ -494,26 +721,10 @@
       </div>
     </div>
 
-    <!-- Detail tabs -->
-    <div id="detail-panel">
-      <div class="tabs">
-        <div class="tab active" data-tab="affected">
-          &#8593; Affected <span class="tab-count" id="tc-affected">0</span>
-        </div>
-        <div class="tab" data-tab="deps">
-          &#8595; Dependencies <span class="tab-count" id="tc-deps">0</span>
-        </div>
-        <div class="tab" data-tab="info">
-          &#8505; Info
-        </div>
-      </div>
-      <div class="tab-body active" id="tb-affected"></div>
-      <div class="tab-body" id="tb-deps"></div>
-      <div class="tab-body" id="tb-info"></div>
-    </div>
-
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 (function () {
@@ -720,7 +931,7 @@
     renderAffectedTab(affectedDist, affectedPrev, name);
     renderDepsTab(depsDist, depsPrev, name);
     renderInfoTab(svc);
-    document.getElementById('detail-panel').classList.add('visible');
+    showDetailOverlay(svc.class_name);
   }
 
   // ── Info bar ───────────────────────────────────────────────────────────────
@@ -736,6 +947,15 @@
     document.getElementById('graph-empty').style.display = 'none';
     document.getElementById('legend').classList.add('visible');
     document.getElementById('depth-ctrl').classList.add('visible');
+    document.getElementById('btn-copy-diagram').classList.add('visible');
+
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const selBg    = isLight ? '#0969da' : '#f0f6fc';
+    const selBdr   = isLight ? '#0550ae' : '#cdd9e5';
+    const selFont  = isLight ? '#ffffff' : '#0d1117';
+    const selHiBg  = isLight ? '#0550ae' : '#ffffff';
+    const selHiBdr = isLight ? '#0969da' : '#e6edf3';
+    const shadowColor = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.4)';
 
     const nodes = new vis.DataSet();
     const edges = new vis.DataSet();
@@ -748,9 +968,9 @@
       shape: 'ellipse',
       size: 32,
       level: 0,
-      color: { background: '#f0f6fc', border: '#cdd9e5',
-               highlight: { background: '#ffffff', border: '#e6edf3' } },
-      font:  { color: '#0d1117', size: 13, bold: true, face: 'SF Mono, Fira Code, monospace' },
+      color: { background: selBg, border: selBdr,
+               highlight: { background: selHiBg, border: selHiBdr } },
+      font:  { color: selFont, size: 13, bold: true, face: 'SF Mono, Fira Code, monospace' },
       borderWidth: 2,
     });
 
@@ -851,7 +1071,7 @@
         smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.4 },
         selectionWidth: 2,
       },
-      nodes: { shadow: { enabled: true, size: 6, color: 'rgba(0,0,0,0.4)' } },
+      nodes: { shadow: { enabled: true, size: 6, color: shadowColor } },
     });
 
     network.on('click', p => {
@@ -971,6 +1191,125 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // ── Detail overlay ─────────────────────────────────────────────────────────
+  let detailVisible = false;
+
+  function showDetailOverlay(name) {
+    const overlay = document.getElementById('detail-overlay');
+    document.getElementById('detail-overlay-title').textContent = shortLabel(name);
+    overlay.classList.add('visible');
+    document.getElementById('btn-toggle-detail').classList.add('visible');
+    detailVisible = true;
+  }
+
+  function hideDetailOverlay() {
+    document.getElementById('detail-overlay').classList.remove('visible');
+    detailVisible = false;
+  }
+
+  function toggleDetailOverlay() {
+    if (detailVisible) {
+      hideDetailOverlay();
+    } else if (selected) {
+      showDetailOverlay(shortLabel(selected));
+    }
+  }
+
+  // ── Theme ─────────────────────────────────────────────────────────────────
+  function getStoredTheme() {
+    try { return localStorage.getItem('service-graph-theme'); } catch(e) { return null; }
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('service-graph-theme', theme); } catch(e) {}
+    const moonIcon = document.getElementById('icon-moon');
+    const sunIcon  = document.getElementById('icon-sun');
+    if (theme === 'light') {
+      moonIcon.classList.add('dim');
+      sunIcon.classList.remove('dim');
+    } else {
+      moonIcon.classList.remove('dim');
+      sunIcon.classList.add('dim');
+    }
+    // Re-render graph with updated colors if a service is selected
+    if (selected && services[selected]) {
+      const { dist: affectedDist, prev: affectedPrev } = getAffected(selected, maxDepth);
+      const { dist: depsDist,     prev: depsPrev }     = getDeps(selected, maxDepth);
+      renderGraph(selected, affectedDist, depsDist, affectedPrev, depsPrev);
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Initialize theme from localStorage or default to dark
+  (function initTheme() {
+    const stored = getStoredTheme();
+    setTheme(stored || 'dark');
+  })();
+
+  // ── Copy diagram ──────────────────────────────────────────────────────────
+  function showToast(msg, duration) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration || 2500);
+  }
+
+  function copyDiagram() {
+    if (!network) return;
+    const btn = document.getElementById('btn-copy-diagram');
+
+    // vis.js renders on a canvas element inside #vis-graph
+    const canvas = document.querySelector('#vis-graph canvas');
+    if (!canvas) {
+      showToast('No diagram to copy');
+      return;
+    }
+
+    canvas.toBlob(function(blob) {
+      if (!blob) {
+        showToast('Failed to capture diagram');
+        return;
+      }
+
+      // Try the modern Clipboard API first
+      if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]).then(function() {
+          btn.classList.add('copied');
+          btn.innerHTML = '<span class="copy-icon">&#10003;</span> Copied!';
+          showToast('Diagram copied to clipboard');
+          setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<span class="copy-icon">&#128203;</span> Copy diagram';
+          }, 2000);
+        }).catch(function() {
+          fallbackDownload(blob);
+        });
+      } else {
+        fallbackDownload(blob);
+      }
+    }, 'image/png');
+  }
+
+  function fallbackDownload(blob) {
+    // Fallback: download as file if clipboard API is unavailable
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'service-graph-' + (selected || 'diagram') + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Diagram downloaded as PNG (clipboard unavailable)');
+  }
+
   // ── Events ────────────────────────────────────────────────────────────────
   document.getElementById('pack-select').addEventListener('change', e => {
     activePack = e.target.value;
@@ -996,6 +1335,16 @@
     document.getElementById('depth-val').textContent = maxDepth;
     if (selected) selectService(selected);
   });
+
+  // Theme toggle
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  // Detail overlay
+  document.getElementById('btn-close-detail').addEventListener('click', hideDetailOverlay);
+  document.getElementById('btn-toggle-detail').addEventListener('click', toggleDetailOverlay);
+
+  // Copy diagram
+  document.getElementById('btn-copy-diagram').addEventListener('click', copyDiagram);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   fetchData(false);
