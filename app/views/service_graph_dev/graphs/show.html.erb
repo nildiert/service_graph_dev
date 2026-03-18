@@ -487,10 +487,10 @@
 
       <div id="legend">
         <div class="leg"><div class="leg-dot" style="background:#f0f6fc;border:1px solid #8b949e"></div> Selected</div>
-        <div class="leg"><div class="leg-dot" style="background:#bd561d"></div> Affected level 1</div>
-        <div class="leg"><div class="leg-dot" style="background:#5e2208"></div> Affected level 2+</div>
-        <div class="leg"><div class="leg-dot" style="background:#1f6feb"></div> Dependency level 1</div>
-        <div class="leg"><div class="leg-dot" style="background:#09357e"></div> Dependency level 2+</div>
+        <div class="leg"><div class="leg-dot" style="background:#bd561d"></div> Affected level 1 (above)</div>
+        <div class="leg"><div class="leg-dot" style="background:#5e2208"></div> Affected level 2+ (above)</div>
+        <div class="leg"><div class="leg-dot" style="background:#1f6feb"></div> Dependency level 1 (below)</div>
+        <div class="leg"><div class="leg-dot" style="background:#09357e"></div> Dependency level 2+ (below)</div>
       </div>
     </div>
 
@@ -740,88 +740,115 @@
     const nodes = new vis.DataSet();
     const edges = new vis.DataSet();
 
+    // Selected node at level 0
     nodes.add({
       id: name,
       label: nodeLabel(name, 0),
       title: name,
       shape: 'ellipse',
       size: 32,
+      level: 0,
       color: { background: '#f0f6fc', border: '#cdd9e5',
                highlight: { background: '#ffffff', border: '#e6edf3' } },
       font:  { color: '#0d1117', size: 13, bold: true, face: 'SF Mono, Fira Code, monospace' },
       borderWidth: 2,
     });
 
+    // Affected nodes go ABOVE (negative levels)
     Object.entries(affected).forEach(([n, d]) => {
       const c    = userColor(d);
       const size = d === 1 ? 20 : 14;
       const path = getPath(n, affectedPrev);
       const pathStr = path.length > 1
-        ? path.map(shortLabel).join(' → ')
+        ? path.map(shortLabel).join(' \u2192 ')
         : `directly uses ${shortLabel(name)}`;
       nodes.add({
         id: n, label: nodeLabel(n, d),
         title: `${n}\nAffected (level ${d})\n${pathStr}${services[n]?.description ? '\n\n' + services[n].description : ''}`,
         shape: 'box', size,
+        level: -d,
         color: { background: c.bg, border: c.border,
                  highlight: { background: c.border, border: '#fff' } },
         font:  { color: c.font, size: 12, face: 'SF Mono, Fira Code, monospace' },
         borderWidth: d === 1 ? 2 : 1,
       });
+      // Edge from this node to its BFS parent (not always root)
+      const parent = affectedPrev[n] || name;
       edges.add({
-        from: n, to: name, arrows: 'to',
+        from: n, to: parent, arrows: 'to',
         color: { color: c.border, opacity: Math.max(0.3, 1 - (d - 1) * 0.2) },
         width: Math.max(0.5, 2 - d * 0.3),
         dashes: d > 1,
-        title: `${n} → ${name} (level ${d})`,
+        title: `${n} \u2192 ${parent} (level ${d})`,
       });
     });
 
+    // Dependency nodes go BELOW (positive levels)
     Object.entries(deps).forEach(([n, d]) => {
       if (nodes.get(n)) return;
       const c    = depColor(d);
       const size = d === 1 ? 20 : 14;
       const path = getPath(n, depsPrev);
       const pathStr = path.length > 1
-        ? path.map(shortLabel).join(' → ')
+        ? path.map(shortLabel).join(' \u2192 ')
         : `${shortLabel(name)} directly uses ${shortLabel(n)}`;
       nodes.add({
         id: n, label: nodeLabel(n, d),
         title: `${n}\nDependency (level ${d})\n${pathStr}${services[n]?.description ? '\n\n' + services[n].description : ''}`,
         shape: 'box', size,
+        level: d,
         color: { background: c.bg, border: c.border,
                  highlight: { background: c.border, border: '#fff' } },
         font:  { color: c.font, size: 12, face: 'SF Mono, Fira Code, monospace' },
         borderWidth: d === 1 ? 2 : 1,
       });
+      // Edge from BFS parent to this node
+      const parent = depsPrev[n] || name;
       edges.add({
-        from: name, to: n, arrows: 'to',
+        from: parent, to: n, arrows: 'to',
         color: { color: c.border, opacity: Math.max(0.3, 1 - (d - 1) * 0.2) },
         width: Math.max(0.5, 2 - d * 0.3),
         dashes: d > 1,
-        title: `${name} → ${n} (level ${d})`,
+        title: `${parent} \u2192 ${n} (level ${d})`,
       });
     });
 
     const container = document.getElementById('vis-graph');
     if (network) { network.destroy(); network = null; }
 
+    const totalNodes = nodes.length;
+    const levelSep = totalNodes > 40 ? 120 : totalNodes > 20 ? 150 : 180;
+    const nodeSep  = totalNodes > 40 ? 100 : totalNodes > 20 ? 130 : 160;
+
     network = new vis.Network(container, { nodes, edges }, {
+      layout: {
+        hierarchical: {
+          enabled: true,
+          direction: 'DU',
+          sortMethod: 'directed',
+          levelSeparation: levelSep,
+          nodeSpacing: nodeSep,
+          treeSpacing: 200,
+          blockShifting: true,
+          edgeMinimization: true,
+          parentCentralization: true,
+        },
+      },
       physics: {
         enabled: true,
-        solver: 'forceAtlas2Based',
-        forceAtlas2Based: {
-          gravitationalConstant: -80,
-          springLength: 140,
-          springConstant: 0.04,
-          avoidOverlap: 0.6,
+        hierarchicalRepulsion: {
+          centralGravity: 0.0,
+          springLength: 120,
+          springConstant: 0.01,
+          nodeDistance: nodeSep + 20,
+          damping: 0.09,
+          avoidOverlap: 0.8,
         },
-        stabilization: { iterations: 200, fit: true },
+        stabilization: { iterations: 150, fit: true },
       },
-      layout: { randomSeed: 7 },
       interaction: { hover: true, tooltipDelay: 150, zoomView: true },
       edges: {
-        smooth: { type: 'curvedCW', roundness: 0.15 },
+        smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.4 },
         selectionWidth: 2,
       },
       nodes: { shadow: { enabled: true, size: 6, color: 'rgba(0,0,0,0.4)' } },
@@ -829,6 +856,10 @@
 
     network.on('click', p => {
       if (p.nodes.length && p.nodes[0] !== selected) selectService(p.nodes[0]);
+    });
+
+    network.once('stabilizationIterationsDone', () => {
+      network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
     });
   }
 
