@@ -1,0 +1,3 @@
+[submodule "vendor/kaskd"]
+	path = vendor/kaskd
+	url = https://github.com/nildiert/kaskd.git
