@@ -276,22 +276,56 @@
     .nav-btn:hover:not(:disabled) { color: var(--accent-hi); border-color: var(--accent-hi); }
     .nav-btn:disabled { opacity: .3; cursor: default; }
 
-    /* ── Export button ────────────────────────────────────────── */
+    /* ── Export button & Dropdown ──────────────────────────────── */
     .btn-export {
       background: var(--bg-deep);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 11px;
       display: flex;
       align-items: center;
-      gap: 5px;
-      transition: color .15s, border-color .15s;
+      gap: 6px;
+      transition: color .15s, border-color .15s, background .15s;
       flex-shrink: 0;
     }
-    .btn-export:hover { color: var(--accent-hi); border-color: var(--accent-hi); }
+    .btn-export:hover { color: var(--text-base); border-color: var(--accent-hi); background: var(--bg-card); }
+
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 5px);
+      background: var(--legend-bg);
+      backdrop-filter: blur(8px);
+      min-width: 180px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      z-index: 100;
+      padding: 4px 0;
+    }
+    .dropdown.active .dropdown-content { display: block; }
+    .dropdown-content button {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      text-align: left;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .1s, color .1s;
+    }
+    .dropdown-content button:hover { background: var(--bg-hover); color: var(--text-base); }
+    .dropdown-content button .opt-icon { font-size: 14px; width: 16px; display: inline-block; text-align: center; }
+    .dropdown-content .divider { height: 1px; background: var(--border); margin: 4px 0; }
 
     /* ── Graph ───────────────────────────────────────────────── */
     .graph-area { flex: 1; position: relative; min-height: 0; }
@@ -579,11 +613,19 @@
     #btn-toggle-detail .arrow { transition: transform .2s; }
     #btn-toggle-detail.shifted .arrow { transform: rotate(180deg); }
 
-    /* ── Copy diagram button ─────────────────────────────────── */
-    #btn-copy-diagram {
+    /* ── Floating graph actions ─────────────────────────────── */
+    #graph-actions-top-left {
       position: absolute;
       top: 12px;
       left: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+    #graph-actions-top-left.visible { display: flex; }
+
+    .btn-floating {
       background: var(--legend-bg);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -591,17 +633,15 @@
       cursor: pointer;
       font-size: 11px;
       color: var(--text-muted);
-      display: none;
+      display: flex;
       align-items: center;
       gap: 6px;
-      transition: color .15s, border-color .15s;
-      z-index: 10;
+      transition: color .15s, border-color .15s, background .15s;
+      white-space: nowrap;
     }
-    #btn-copy-diagram:hover { color: var(--accent-hi); border-color: var(--accent-hi); }
-    #btn-copy-diagram.visible { display: flex; }
-    #btn-copy-diagram .copy-icon { font-size: 13px; }
-    #btn-copy-diagram.copied { color: #3fb950; border-color: #3fb950; }
-    #btn-copy-diagram.copied::after { content: none; }
+    .btn-floating:hover { color: var(--accent-hi); border-color: var(--accent-hi); }
+    .btn-floating .icon { font-size: 13px; }
+    .btn-floating.copied { color: #3fb950; border-color: #3fb950; }
 
     /* ── Toast notification ──────────────────────────────────── */
     .toast {
@@ -722,7 +762,33 @@
         <div id="info-file"></div>
       </div>
       <span class="spacer"></span>
-      <button class="btn-export" id="btn-export" title="Download dependency report as JSON">&#8615; Export JSON</button>
+      <div class="dropdown" id="export-dropdown">
+        <button class="btn-export" id="btn-export-toggle" title="Export options">
+          <span>&#8615; Export</span>
+          <span style="font-size: 8px; opacity: .5; margin-left: 2px;">&#9660;</span>
+        </button>
+        <div class="dropdown-content">
+          <button id="export-json" title="Download dependency report as JSON">
+            <span class="opt-icon">&#128203;</span> JSON Report
+          </button>
+          <button id="export-mermaid" title="Download Mermaid source file (.mmd)">
+            <span class="opt-icon">&#128221;</span> Mermaid Source (.mmd)
+          </button>
+          <button id="export-png" title="Download diagram as PNG">
+            <span class="opt-icon">&#128443;</span> Diagram Image (.png)
+          </button>
+          <div class="divider"></div>
+          <button id="export-copy-mermaid">
+            <span class="opt-icon">&#10064;</span> Copy Mermaid Code
+          </button>
+          <button id="export-copy-png">
+            <span class="opt-icon">&#10064;</span> Copy Image to Clipboard
+          </button>
+          <button id="export-live-mermaid">
+            <span class="opt-icon">&#128200;</span> Open in Mermaid Live
+          </button>
+        </div>
+      </div>
       <div class="blast-badge" title="Services that would be affected if this one changes">
         <div>
           <div class="num" id="blast-num">0</div>
@@ -746,9 +812,17 @@
         <p>Select a service to see its transitive blast radius</p>
       </div>
 
-      <button id="btn-copy-diagram" title="Copy diagram to clipboard">
-        <span class="copy-icon">&#128203;</span> Copy diagram
-      </button>
+      <div id="graph-actions-top-left">
+        <button id="btn-copy-diagram" class="btn-floating" title="Copy diagram image to clipboard">
+          <span class="icon">&#128203;</span> Copy diagram
+        </button>
+        <button id="btn-copy-mermaid" class="btn-floating" title="Copy Mermaid diagram source">
+          <span class="icon">&#128221;</span> Copy Mermaid
+        </button>
+        <button id="btn-open-mermaid" class="btn-floating" title="Open in Mermaid Live Editor">
+          <span class="icon">&#128200;</span> Mermaid Live
+        </button>
+      </div>
 
       <div id="depth-ctrl">
         Depth
@@ -777,6 +851,7 @@
   // Route URLs injected from engine routes
   var DATA_URL    = '<%= data_path %>';
   var REFRESH_URL = '<%= refresh_path %>';
+  var MERMAID_URL = '<%= mermaid_path %>';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let services  = {};
@@ -1027,7 +1102,7 @@
     document.getElementById('graph-empty').style.display = 'none';
     document.getElementById('legend').classList.add('visible');
     document.getElementById('depth-ctrl').classList.add('visible');
-    document.getElementById('btn-copy-diagram').classList.add('visible');
+    document.getElementById('graph-actions-top-left').classList.add('visible');
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     const selBg    = isLight ? '#0969da' : '#f0f6fc';
@@ -1381,11 +1456,11 @@
           new ClipboardItem({ 'image/png': blob })
         ]).then(function() {
           btn.classList.add('copied');
-          btn.innerHTML = '<span class="copy-icon">&#10003;</span> Copied!';
+          btn.innerHTML = '<span class="icon">&#10003;</span> Copied!';
           showToast('Diagram copied to clipboard');
           setTimeout(function() {
             btn.classList.remove('copied');
-            btn.innerHTML = '<span class="copy-icon">&#128203;</span> Copy diagram';
+            btn.innerHTML = '<span class="icon">&#128203;</span> Copy diagram';
           }, 2000);
         }).catch(function() {
           fallbackDownload(blob);
@@ -1394,6 +1469,96 @@
         fallbackDownload(blob);
       }
     }, 'image/png');
+  }
+
+  function generateMermaidText() {
+    if (!selected || !services[selected]) return '';
+
+    const { dist: affectedDist, prev: affectedPrev } = getAffected(selected, maxDepth);
+    const { dist: depsDist,     prev: depsPrev }     = getDeps(selected, maxDepth);
+
+    let lines = ['graph TD'];
+
+    const id = (n) => n.replace(/::/g, '_');
+    const label = (n) => `"${n}"`;
+
+    const allNodes = new Set();
+    allNodes.add(selected);
+    Object.keys(affectedDist).forEach(n => allNodes.add(n));
+    Object.keys(depsDist).forEach(n => allNodes.add(n));
+
+    lines.push(`  %% Styles`);
+    lines.push(`  classDef default fill:#161b22,stroke:#30363d,color:#e6edf3,font-family:monospace`);
+    lines.push(`  classDef selected fill:#f0f6fc,stroke:#30a14e,stroke-width:2px,color:#0d1117`);
+    lines.push(`  classDef affected fill:#bd561d,stroke:#ffa657,color:#ffffff`);
+    lines.push(`  classDef dependency fill:#1f6feb,stroke:#79c0ff,color:#ffffff`);
+
+    Array.from(allNodes).sort().forEach(n => {
+      let cls = 'default';
+      if (n === selected) {
+        cls = 'selected';
+      } else if (affectedDist[n] !== undefined) {
+        cls = 'affected';
+      } else if (depsDist[n] !== undefined) {
+        cls = 'dependency';
+      }
+      lines.push(`  ${id(n)}[${label(n)}]:::${cls}`);
+    });
+
+    lines.push(``);
+    lines.push(`  %% Edges`);
+
+    Object.entries(affectedDist).forEach(([n, d]) => {
+      const parent = affectedPrev[n] || selected;
+      lines.push(`  ${id(n)} --> ${id(parent)}`);
+    });
+
+    Object.entries(depsDist).forEach(([n, d]) => {
+      const parent = depsPrev[n] || selected;
+      lines.push(`  ${id(parent)} --> ${id(n)}`);
+    });
+
+    return lines.join('\n');
+  }
+
+  function copyMermaid() {
+    const mermaidText = generateMermaidText();
+    if (!mermaidText) return;
+    const btn = document.getElementById('btn-copy-mermaid');
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(mermaidText).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '<span class="icon">&#10003;</span> Copied!';
+        showToast('Mermaid code copied to clipboard');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<span class="icon">&#128221;</span> Copy Mermaid';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy Mermaid');
+      });
+    } else {
+      console.log(mermaidText);
+      showToast('Clipboard API unavailable. Check console.');
+    }
+  }
+
+  function openMermaidLive() {
+    const mermaidText = generateMermaidText();
+    if (!mermaidText) return;
+
+    const state = {
+      code: mermaidText,
+      mermaid: { theme: 'dark' },
+      updateEditor: true,
+      autoSync: true,
+      updateDiagram: true
+    };
+    const json = JSON.stringify(state);
+    const base64 = btoa(unescape(encodeURIComponent(json)));
+    window.open('https://mermaid.live/edit#base64:' + base64, '_blank');
   }
 
   function fallbackDownload(blob) {
@@ -1409,7 +1574,6 @@
     showToast('Diagram downloaded as PNG (clipboard unavailable)');
   }
 
-  // ── Export JSON report ────────────────────────────────────────────────────
   function exportJSON() {
     if (!selected || !services[selected]) return;
 
@@ -1457,15 +1621,63 @@
 
     const json = JSON.stringify(report, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
+    const name = selected.replace(/::/g, '-').toLowerCase() + '-report';
+    downloadBlob(blob, name + '.json');
+    showToast('Report downloaded');
+  }
+
+  function exportMermaidFile() {
+    const text = generateMermaidText();
+    if (!text) return;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const name = (selected || 'diagram').replace(/::/g, '-').toLowerCase();
+    downloadBlob(blob, name + '.mmd');
+    showToast('Mermaid source downloaded');
+  }
+
+  function downloadPNG() {
+    if (!network) return;
+    const srcCanvas = document.querySelector('#vis-graph canvas');
+    if (!srcCanvas) return;
+    
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const bgColor = isLight ? '#f6f8fa' : '#0d1117';
+    
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width  = srcCanvas.width;
+    outCanvas.height = srcCanvas.height;
+    const ctx = outCanvas.getContext('2d');
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+    ctx.drawImage(srcCanvas, 0, 0);
+    
+    outCanvas.toBlob(blob => {
+      if (!blob) return;
+      const name = (selected || 'diagram').replace(/::/g, '-').toLowerCase();
+      downloadBlob(blob, name + '.png');
+      showToast('Diagram image downloaded');
+    }, 'image/png');
+  }
+
+  function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = selected.replace(/::/g, '-').toLowerCase() + '-report.json';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Report downloaded');
+  }
+
+  function toggleExportDropdown() {
+    document.getElementById('export-dropdown')?.classList.toggle('active');
+  }
+
+  function closeExportDropdown(e) {
+    if (!e.target.closest('#export-dropdown')) {
+      document.getElementById('export-dropdown')?.classList.remove('active');
+    }
   }
 
   // ── Events ────────────────────────────────────────────────────────────────
@@ -1501,15 +1713,28 @@
   document.getElementById('btn-close-detail').addEventListener('click', hideDetailOverlay);
   document.getElementById('btn-toggle-detail').addEventListener('click', toggleDetailOverlay);
 
-  // Copy diagram
+  // Copy diagram & Mermaid
   document.getElementById('btn-copy-diagram').addEventListener('click', copyDiagram);
+  document.getElementById('btn-copy-mermaid').addEventListener('click', copyMermaid);
+  document.getElementById('btn-open-mermaid').addEventListener('click', openMermaidLive);
 
   // Navigation
   document.getElementById('btn-back').addEventListener('click', navigateBack);
   document.getElementById('btn-forward').addEventListener('click', navigateForward);
 
-  // Export
-  document.getElementById('btn-export').addEventListener('click', exportJSON);
+  // Export Dropdown
+  document.getElementById('btn-export-toggle')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleExportDropdown();
+  });
+  document.addEventListener('click', closeExportDropdown);
+
+  document.getElementById('export-json')?.addEventListener('click', () => { exportJSON(); toggleExportDropdown(); });
+  document.getElementById('export-mermaid')?.addEventListener('click', () => { exportMermaidFile(); toggleExportDropdown(); });
+  document.getElementById('export-png')?.addEventListener('click', () => { downloadPNG(); toggleExportDropdown(); });
+  document.getElementById('export-copy-mermaid')?.addEventListener('click', () => { copyMermaid(); toggleExportDropdown(); });
+  document.getElementById('export-copy-png')?.addEventListener('click', () => { copyDiagram(); toggleExportDropdown(); });
+  document.getElementById('export-live-mermaid')?.addEventListener('click', () => { openMermaidLive(); toggleExportDropdown(); });
 
   // ── Init ──────────────────────────────────────────────────────────────────
   fetchData(false);

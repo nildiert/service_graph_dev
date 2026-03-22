@@ -97,6 +97,22 @@ The analyzer runs a two-pass static analysis:
 
 A reverse index maps each class to the services that use it. BFS traversal on this reverse index computes the full transitive blast radius with predecessor tracking for path reconstruction.
 
+## Testing
+
+The gem includes a suite of unit tests to verify dependency analysis and Mermaid export logic.
+
+To run the tests:
+
+```bash
+rake test
+```
+
+Or using bundle:
+
+```bash
+bundle exec rake test
+```
+
 ## License
 
 MIT

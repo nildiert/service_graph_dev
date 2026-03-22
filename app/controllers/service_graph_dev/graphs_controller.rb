@@ -25,6 +25,17 @@ module ServiceGraphDev
       render json: Analyzer.analyze_cached
     end
 
+    def mermaid
+      data = Analyzer.analyze_cached
+      exporter = MermaidExporter.new(
+        data[:services],
+        params[:selected],
+        max_depth: (params[:depth] || 3).to_i,
+        active_pack: params[:active_pack].presence
+      )
+      render plain: exporter.export
+    end
+
     # Sirve vis-network.min.js embebido en la gema para evitar dependencia de CDN externo.
     # Esto elimina problemas con Content-Security-Policy.
     def vis_network_js
